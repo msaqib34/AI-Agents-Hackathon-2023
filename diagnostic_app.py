@@ -8,12 +8,16 @@ from langchain.chat_models import ChatOpenAI
 from langchain.memory import ChatMessageHistory, ConversationBufferMemory
 from langchain.schema import messages_from_dict, messages_to_dict
 from langchain.llms import OpenAI
+from langchain import OpenAI, LLMChain, PromptTemplate
 from langchain.chains import ConversationChain
+from langchain.chains.conversation.memory import ConversationBufferWindowMemory
+from langchain.agents import initialize_agent
 
+
+ 
 MODEL_NAME = "gpt-3.5-turbo-0613"
 CSV_FILES = ["data/dataset.csv", "data/symptom_description.csv",
               "data/symptom_precaution.csv", "data/symptom_severity.csv"]
-
 
 def generate_response(prompt: str, agent: AgentExecutor) -> str:
     try:
@@ -67,10 +71,12 @@ def import_history_from_file(history_file, history):
         st.session_state["history_imported"] = True
 
 
+
 def main():
     st.title("Your General Practitioner 👩‍⚕️")
     openai_api_key = st.sidebar.text_input("OpenAI API key")
-
+    
+    
     if not openai_api_key:
         st.warning("Please enter your OpenAI API key in the right field")
         return
@@ -102,8 +108,9 @@ def main():
     if st.session_state["generated"]:
         for i, (gen, past) in enumerate(zip(reversed(st.session_state["generated"]),
                                             reversed(st.session_state["past"]))):
-            st.write(gen)
             st.write(past, is_user=True)
+            st.write(gen)
+            
 
     dicts = json.dumps(messages_to_dict(history.messages))
     download_icon = '<svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path d="M0 0h16v16H0z" fill="none"/><path d="M9 8V3H7v5H4l4 4 4-4h-3zM4 13v1h8v-1H4z"/></svg>'
